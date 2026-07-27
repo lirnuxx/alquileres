@@ -6,9 +6,8 @@ import { SEED_PROPERTIES, getPropertyById as getSeedById } from "./seed-properti
  * In Phase 1+ this will be replaced with Prisma/DB calls.
  * Until then, mutations exist in memory only (per server instance).
  */
-let store: Property[] = [...SEED_PROPERTIES];
+const store = [...SEED_PROPERTIES] as Property[];
 let nextId = 100;
-
 export function getAllProperties(): Property[] {
   return store;
 }

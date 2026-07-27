@@ -1,4 +1,4 @@
-// @ts-ignore: Some environments/types may not expose PrismaClient typings correctly
+// @ts-expect-error: Some environments/types may not expose PrismaClient typings correctly
 import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as {

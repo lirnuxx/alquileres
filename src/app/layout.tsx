@@ -8,6 +8,7 @@ import {
   Settings,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
+import "./globals.css";
 
 const sidebarLinks = [
   {

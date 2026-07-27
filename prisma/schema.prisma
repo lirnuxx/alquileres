@@ -1,0 +1,171 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  SUPER_ADMIN
+  TENANT_ADMIN
+  AGENT
+  SEARCHER
+}
+
+enum OperationType {
+  RENT
+  SALE
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  PH
+  LAND
+  OFFICE
+  COMMERCIAL_LOCAL
+}
+
+enum PropertyStatus {
+  ACTIVE
+  PAUSED
+  RENTED
+  SOLD
+}
+
+enum PlanTier {
+  FREE
+  BASIC
+  PRO
+}
+
+model Tenant {
+  id           String    @id @default(cuid())
+  name         String
+  slug         String    @unique
+  customDomain String?   @unique
+  logoUrl      String?
+  primaryColor String?
+  planTier     PlanTier  @default(FREE)
+  createdAt    DateTime  @default(now())
+
+  users        User[]
+  properties   Property[]
+  subscription Subscription?
+}
+
+model User {
+  id             String   @id @default(cuid())
+  tenantId       String?
+  tenant         Tenant?  @relation(fields: [tenantId], references: [id])
+  email          String   @unique
+  name           String?
+  role           Role     @default(SEARCHER)
+  authProviderId String?  @unique
+  createdAt      DateTime @default(now())
+
+  favorites      Favorite[]
+  savedSearches  SavedSearch[]
+}
+
+model Property {
+  id             String          @id @default(cuid())
+  tenantId       String
+  tenant         Tenant          @relation(fields: [tenantId], references: [id])
+  title          String
+  description    String
+  operationType  OperationType
+  propertyType   PropertyType
+  status         PropertyStatus  @default(ACTIVE)
+  price          Decimal
+  currency       String          @default("ARS")
+  coveredArea    Float?
+  totalArea      Float?
+  rooms          Int?
+  bedrooms       Int?
+  bathrooms      Int?
+  ageYears       Int?
+  expensasAmount Decimal?
+  address        String
+  neighborhood   String?
+  city           String
+  lat            Float
+  lng            Float
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  images         PropertyImage[]
+  amenities      PropertyAmenity[]
+  favorites      Favorite[]
+  leads          Lead[]
+
+  @@index([tenantId])
+  @@index([city, propertyType, operationType])
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  url        String
+  order      Int      @default(0)
+  isCover    Boolean  @default(false)
+}
+
+model Amenity {
+  id         String            @id @default(cuid())
+  name       String            @unique
+  properties PropertyAmenity[]
+}
+
+model PropertyAmenity {
+  propertyId String
+  amenityId  String
+  property   Property @relation(fields: [propertyId], references: [id])
+  amenity    Amenity  @relation(fields: [amenityId], references: [id])
+
+  @@id([propertyId, amenityId])
+}
+
+model Favorite {
+  userId     String
+  propertyId String
+  user       User     @relation(fields: [userId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@id([userId, propertyId])
+}
+
+model SavedSearch {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  name       String
+  filters    Json
+  alertsOn   Boolean   @default(false)
+  lastSentAt DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model Lead {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  name       String
+  email      String
+  phone      String?
+  message    String?
+  createdAt  DateTime @default(now())
+}
+
+model Subscription {
+  id               String    @id @default(cuid())
+  tenantId         String    @unique
+  tenant           Tenant    @relation(fields: [tenantId], references: [id])
+  mercadoPagoSubId String?
+  status           String
+  currentPeriodEnd DateTime?
+}

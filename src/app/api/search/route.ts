@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { SEED_PROPERTIES } from "@/lib/seed-properties";
 import { DEFAULT_FILTERS, filterProperties } from "@/lib/search";
+import { listActiveProperties } from "@/server/services/propertyService";
 import type { SearchFilters } from "@/types/property";
 
-/** GET /api/search — alineado al SPEC (MVP con datos seed) */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+  const properties = await listActiveProperties();
 
   const filters: SearchFilters = {
     ...DEFAULT_FILTERS,
@@ -43,7 +43,7 @@ export async function GET(request: Request) {
       .filter(Boolean) as SearchFilters["propertyTypes"],
   };
 
-  const results = filterProperties(SEED_PROPERTIES, filters);
+  const results = filterProperties(properties, filters);
   return NextResponse.json({
     page: Number(searchParams.get("page") ?? 1),
     total: results.length,

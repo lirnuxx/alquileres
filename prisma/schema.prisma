@@ -112,6 +112,7 @@ model PropertyImage {
   url        String
   order      Int      @default(0)
   isCover    Boolean  @default(false)
+  
 }
 
 model Amenity {

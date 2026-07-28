@@ -140,6 +140,7 @@ model Lead {
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   tenantId   String
   tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+ }
 model Amenity {
   id         String            @id @default(cuid())
   name       String            @unique

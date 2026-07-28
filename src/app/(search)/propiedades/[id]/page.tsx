@@ -9,7 +9,8 @@ import {
   MapPin,
   Maximize2,
 } from "lucide-react";
-import { getPropertyById } from "@/lib/seed-properties";
+import { ContactLeadForm } from "@/components/property/ContactLeadForm";
+import { getPropertyById } from "@/server/services/propertyService";
 import { formatPrice } from "@/lib/utils";
 import {
   OPERATION_LABELS,
@@ -20,15 +21,12 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-export async function generateStaticParams() {
-  const { SEED_PROPERTIES } = await import("@/lib/seed-properties");
-  return SEED_PROPERTIES.map((p) => ({ id: p.id }));
-}
+export const dynamic = "force-dynamic";
 
 export default async function PropertyDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const property = getPropertyById(id);
-  if (!property) notFound();
+  const property = await getPropertyById(id);
+  if (!property || property.status !== "ACTIVE") notFound();
 
   const cover =
     property.images.find((i) => i.isCover)?.url ?? property.images[0]?.url;
@@ -76,7 +74,8 @@ export default async function PropertyDetailPage({ params }: PageProps) {
             </h1>
             <p className="mt-2 flex items-center gap-2 text-slate-600">
               <MapPin className="h-4 w-4 shrink-0" />
-              {property.address}, {property.neighborhood && `${property.neighborhood}, `}
+              {property.address},{" "}
+              {property.neighborhood && `${property.neighborhood}, `}
               {property.city}
             </p>
           </div>
@@ -130,31 +129,29 @@ export default async function PropertyDetailPage({ params }: PageProps) {
             <p className="mt-3 leading-relaxed text-slate-700">
               {property.description}
             </p>
+            {property.amenities.length > 0 && (
+              <>
+                <h2 className="mt-8 text-lg font-bold text-slate-900">
+                  Amenities
+                </h2>
+                <ul className="mt-3 flex flex-wrap gap-2">
+                  {property.amenities.map((a) => (
+                    <li
+                      key={a}
+                      className="rounded-lg bg-slate-100 px-3 py-1.5 text-sm text-slate-700"
+                    >
+                      {a}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
           <aside>
-            <h2 className="text-lg font-bold text-slate-900">Amenities</h2>
-            <ul className="mt-3 flex flex-wrap gap-2">
-              {property.amenities.map((a) => (
-                <li
-                  key={a}
-                  className="rounded-lg bg-slate-100 px-3 py-1.5 text-sm text-slate-700"
-                >
-                  {a}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-6 rounded-2xl bg-brand-600 p-5 text-white">
-              <p className="font-semibold">¿Te interesa?</p>
-              <p className="mt-1 text-sm text-brand-100">
-                Contactá a la inmobiliaria para coordinar una visita.
-              </p>
-              <button
-                type="button"
-                className="mt-4 w-full rounded-xl bg-white py-2.5 text-sm font-semibold text-brand-700"
-              >
-                Solicitar información
-              </button>
-            </div>
+            <ContactLeadForm
+              propertyId={property.id}
+              propertyTitle={property.title}
+            />
           </aside>
         </section>
       </article>

@@ -8,13 +8,6 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { CITIES } from "@/lib/seed-properties";
-import {
-  DEFAULT_FILTERS,
-  filterProperties,
-  type PropertyWithDistance,
-} from "@/lib/search";
 import type {
   OperationType,
   Property,
@@ -24,12 +17,19 @@ import { OPERATION_LABELS } from "@/types/property";
 import { PropertyCard } from "@/components/property/PropertyCard";
 import { FilterBar } from "@/components/search/FilterBar";
 import { ResultsMap } from "@/components/search/ResultsMap";
+import {
+  DEFAULT_FILTERS,
+  filterProperties,
+  type PropertyWithDistance,
+} from "@/lib/search";
+import { cn } from "@/lib/utils";
 
 interface SearchPageClientProps {
   initialProperties: Property[];
+  cities: string[];
 }
 
-export function SearchPageClient({ initialProperties }: SearchPageClientProps) {
+export function SearchPageClient({ initialProperties, cities }: SearchPageClientProps) {
   const [filters, setFilters] = useState<SearchFilters>(DEFAULT_FILTERS);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [view, setView] = useState<"grid" | "map">("grid");
@@ -179,7 +179,7 @@ export function SearchPageClient({ initialProperties }: SearchPageClientProps) {
         <aside className="hidden lg:block">
           <FilterBar
             filters={filters}
-            cities={CITIES}
+            cities={cities}
             onChange={setFilters}
             onReset={() => setFilters(DEFAULT_FILTERS)}
           />
@@ -224,7 +224,7 @@ export function SearchPageClient({ initialProperties }: SearchPageClientProps) {
             </div>
             <FilterBar
               filters={filters}
-              cities={CITIES}
+              cities={cities}
               onChange={setFilters}
               onReset={() => setFilters(DEFAULT_FILTERS)}
             />

@@ -1,4 +1,5 @@
 datasource db {
+  provider = "sqlite"
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
@@ -42,6 +43,16 @@ enum PlanTier {
 }
 
 model Tenant {
+  id           String     @id @default(cuid())
+  name         String
+  slug         String     @unique
+  customDomain String?    @unique
+  logoUrl      String?
+  primaryColor String?
+  planTier     PlanTier   @default(FREE)
+  createdAt    DateTime   @default(now())
+  properties   Property[]
+  leads        Lead[]
   id           String    @id @default(cuid())
   name         String
   slug         String    @unique
@@ -73,12 +84,14 @@ model User {
 model Property {
   id             String          @id @default(cuid())
   tenantId       String
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tenant         Tenant          @relation(fields: [tenantId], references: [id])
   title          String
   description    String
   operationType  OperationType
   propertyType   PropertyType
   status         PropertyStatus  @default(ACTIVE)
+  price          Float
   price          Decimal
   currency       String          @default("ARS")
   coveredArea    Float?
@@ -87,12 +100,17 @@ model Property {
   bedrooms       Int?
   bathrooms      Int?
   ageYears       Int?
+  expensasAmount Float?
   expensasAmount Decimal?
   address        String
   neighborhood   String?
   city           String
   lat            Float
   lng            Float
+  amenities      String          @default("[]")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  images         PropertyImage[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
@@ -108,12 +126,19 @@ model Property {
 model PropertyImage {
   id         String   @id @default(cuid())
   propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   property   Property @relation(fields: [propertyId], references: [id])
   url        String
   order      Int      @default(0)
   isCover    Boolean  @default(false)
 }
 
+model Lead {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 model Amenity {
   id         String            @id @default(cuid())
   name       String            @unique
